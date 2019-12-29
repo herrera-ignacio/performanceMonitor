@@ -31,6 +31,7 @@ socket.on('connect', () => {
 	// Start sending data on interval
 	let perfDataInterval = setInterval(() => {
 		getPerformanceData().then((data) => {
+			data.macA = macA;
 			socket.emit('perfData', data);
 		})
 	}, 1000);
@@ -57,6 +58,7 @@ function getPerformanceData() {
 			speed: cpus[0].speed
 		};
 		const cpuLoad = await getCpuLoad();
+		const isActive = true;
 
 		resolve({
 			osType,
@@ -65,7 +67,8 @@ function getPerformanceData() {
 			totalMem,
 			memUsage,
 			cpu,
-			cpuLoad
+			cpuLoad,
+			isActive
 		});
 	});
 }

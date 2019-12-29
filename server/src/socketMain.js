@@ -9,13 +9,32 @@ function socketMain(io, socket) {
 		if (key === '4kk39vmasdklg1305') {
 			// valid node client
 			socket.join('clients');
+			console.log('Node client has joined!');
 		} else if (key === 'asdkkw134ipfaosdk13') {
 			// valid ui client
 			socket.join('ui');
+			console.log('React client has joined!');
+			Machine.find({}, (err, docs) => {
+				docs.forEach((machine) => {
+					// On load, assume that all machines are offline
+					machine.isActive = false;
+					io.to('ui').emit('data', machine);
+				});
+			});
 		} else {
 			// unauthorized client
 			socket.disconnect(true);
 		}
+	});
+
+	socket.on('disconnect', () => {
+		Machine.find({ macA: macA }, (err, docs) => {
+			if (docs.length > 0) {
+				// Send one last emit to React
+				docs[0].isActive = false;
+				io.to('ui').emit('data', docs[0]);
+			};
+		});
 	});
 
 	socket.on('initPerfData', async (data) => {
@@ -29,7 +48,7 @@ function socketMain(io, socket) {
 	});
 
 	socket.on('perfData', (data) => {
-		console.log('Data update');
+		io.to('ui').emit('data', data);
 	});
 }
 
