@@ -5,6 +5,36 @@ and sends it up to the socket.io server
 
 
 const os = require('os');
+const io = require('socket.io-client');
+
+let socket = io('http://server:80');
+
+socket.on('connect', () => {
+	console.log('Connected to the socket server!');
+	const networkIf = os.networkInterfaces();
+	let macA;
+	for(let key in networkIf) {
+		if(!networkIf[key][0].internal) {
+			macA = networkIf[key][0].mac;
+			break;
+		}
+	}
+
+	// Client auth with single key value
+	socket.emit('clientAuth', '4kk39vmasdklg1305');
+
+
+	// Start sending data on interval
+	let perfDataInterval = setInterval(() => {
+		getPerformanceData().then((data) => {
+			socket.emit('perfData', data);
+		})
+	}, 1000);
+
+	socket.on('disconnect', () => {
+		clearInterval(perfDataInterval);
+	});
+});
 
 function getPerformanceData() {
 	return new Promise(async (resolve, reject) => {
@@ -74,6 +104,3 @@ function getCpuLoad() {
 		}, 100)
 	});
 }
-
-getPerformanceData()
-	.then((data) => console.log(data));

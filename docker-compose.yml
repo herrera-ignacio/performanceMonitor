@@ -1,0 +1,38 @@
+version: "3"
+services:
+  redis:
+    container_name: "redis"
+    restart: always
+    image: redis
+    ports:
+      - "6379:6379"
+    command: --requirepass secret
+  mongo:
+    container_name: "mongodb"
+    restart: "always"
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo/data:/data/db
+  node_server:
+    container_name: "server"
+    restart: always
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./server/src:/usr/app/src
+  node_client:
+    container_name: "client"
+    restart: always
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    volumes:
+      - ./client/node_modules:/usr/app/node_modules
+      - ./client/src:/usr/app/src
